@@ -44,20 +44,22 @@ impl Component for MemePage {
     }
 
     fn view(&self) -> Html {
-        html! { 
-            <>
-            <img class="card-img-top rounded" src="img/imperial college.jpg" alt="Card image cap"/>
-            <div class="d-flex justify-content-center">
-                <h1>{"Yo is this meme cheese or what?"}</h1>
-            </div>
-                <div class="d-flex justify-content-center">
-                    <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
-                        <button type="button" class="btn btn-success">{"Fab"}</button>
-                        <button type="button" class="btn btn-secondary">{"Meh"}</button>
-                        <button type="button" class="btn btn-danger">{"Nah"}</button>
+        html! {
+            <div class = "d-flex justify-content-center">
+                <div class="card  mw-50 mh-50">
+                    <img class="card-img-top rounded" src={self.display_meme.image_url.clone()} alt="Card image cap"/>
+                    <div class="d-flex justify-content-center">
+                        <h1>{"Yo is this meme cheese or what?"}</h1>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-success">{"Fab"}</button>
+                            <button type="button" class="btn btn-secondary">{"Meh"}</button>
+                            <button type="button" class="btn btn-danger">{"Nah"}</button>
+                        </div>
                     </div>
                 </div>
-            </>
+            </div>
         }
     }
 }

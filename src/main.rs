@@ -7,6 +7,9 @@ mod welcome;
 #[path ="./pages/meme.rs"]
 mod meme;
 
+#[path ="./pages/poke.rs"]
+mod poke;
+
 
 enum MainState {
     MemePage,
@@ -83,7 +86,7 @@ impl Component for MainPage {
                 {match self.state {
                     MainState::WelcomePage => html!{ <welcome::WelcomePage/> },
                     MainState::MemePage => html!{ <meme::MemePage/> },
-                    MainState::PokePage => html!{ {"This is the poke page yo"} },
+                    MainState::PokePage => html!{ <poke::PokePage/> },
                 }}
             </>
         }
