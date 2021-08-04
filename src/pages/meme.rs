@@ -1,6 +1,10 @@
 
 use yew::prelude::*;
 
+mod memepoke;
+
+
+
 struct Meme {
     meme_id : i64,
     image_url : String,
@@ -20,7 +24,7 @@ pub struct MemePage {
 }
 
 impl Component for MemePage {
-    type Properties = ();
+    type Properties = ComponentLink<memepoke::MemePokePage>;
     type Message = MemeMessage;
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {

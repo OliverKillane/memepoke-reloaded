@@ -1,9 +1,9 @@
 use yew::prelude::*;
 
 
-pub struct WelcomePage;
+pub struct LoginPage;
 
-impl Component for WelcomePage {
+impl Component for LoginPage {
     type Properties = ();
     type Message = ();
 
@@ -26,7 +26,7 @@ impl Component for WelcomePage {
                     <div class="card mh-50 w-25">
                         <h1 class="h-5">{"MemePoke Reloaded!"}</h1>
                         <img src="img/memepoke.png" class="img-fluid" alt="Responsive image"/>
-                        <p>{"Developed by Oliver Killane as the successor to MemePoke! from the IC Hello World Hackathon."}</p>
+                        
                     </div>
                 </div>
             //</div>

@@ -1,41 +1,48 @@
-use yew::prelude::*;
-
-// The pages files to be included
-#[path ="./pages/welcome.rs"]
-mod welcome;
-
-#[path ="./pages/meme.rs"]
-mod meme;
-
-#[path ="./pages/poke.rs"]
-mod poke;
+use yew::{prelude::*, props};
+use yew_router::{Switch, prelude::*, switch::Permissive};
 
 
-enum MainState {
-    MemePage,
-    PokePage,
-    WelcomePage,
+#[path = "pages/about.rs"]
+mod about;
+
+#[path = "pages/error.rs"]
+mod error;
+
+#[path = "pages/memepoke.rs"]
+mod memepoke;
+
+#[derive(Switch, Clone)]
+enum SiteRoutes {
+    #[to = "/about"]
+    About,
+    #[to = "/memepoke?state={}&code={}#_"]
+    MemePoke(String, String),
+    #[to = "/mempoke?state={}&error=access_denied#_"]
+    Denied(String),
+    #[to = "/"]
+    Login,
+    PageNotFound(Permissive<String>),
 }
 
-struct MainPage {
+// the main page
+struct MainPage{
     link: ComponentLink<Self>,
-    state: MainState
+    state: String
 }
 
 impl Component for MainPage {
     type Properties = ();
-    type Message = MainState;
+    type Message = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             link,
-            state: MainState::WelcomePage
+            state: String::from("hey")
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        self.state = msg;
-        true
+    fn update(&mut self, _: Self::Message) -> ShouldRender {
+        false
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
@@ -43,52 +50,36 @@ impl Component for MainPage {
     }
 
     fn view(&self) -> Html {
-        html! { 
-            <>
-                <nav class="class=navbar fixed-top navbar-light bg-light">
-                    <div class="d-flex text-white">
-                        <div class="p-2 w-100">
-                            <div class="d-flex justify-content-center">
-                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                    {
-                                        match self.state {
-                                            MainState::MemePage => html!{
-                                                <>
-                                                    <button type="button" class="btn btn-primary">{"Meme"}</button>
-                                                    <button onclick={self.link.callback(|_| MainState::PokePage)} type="button" class="btn btn-outline-primary">{"Poke"}</button>
-                                                </>
-                                            },
-                                            MainState::PokePage =>  html!{
-                                                <>
-                                                    <button onclick={self.link.callback(|_| MainState::MemePage)} type="button" class="btn btn-outline-primary">{"Meme"}</button>
-                                                    <button type="button" class="btn btn-primary">{"Poke"}</button>
-                                                </>
-                                            },
-                                            MainState::WelcomePage =>  html!{
-                                                <>
-                                                    <button type="button" class="btn btn-outline-primary">{"Meme"}</button>
-                                                    <button type="button" class="btn btn-outline-primary">{"Poke"}</button>
-                                                </>
-                                            }
-                                        }
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-2 flex-shrink-0">
-                            {if let MainState::WelcomePage = self.state 
-                                {html!{<button onclick={self.link.callback(|_| MainState::MemePage)} type="button" class="btn btn-success">{"Login"}</button>}} 
-                            else 
-                                {html!{<button onclick={self.link.callback(|_| MainState::WelcomePage)} type="button" class="btn btn-danger">{"Logout"}</button>}}}
-                        </div>
-                    </div>
-                </nav>
-                {match self.state {
-                    MainState::WelcomePage => html!{ <welcome::WelcomePage/> },
-                    MainState::MemePage => html!{ <meme::MemePage/> },
-                    MainState::PokePage => html!{ <poke::PokePage/> },
-                }}
-            </>
+        html! {
+            <Router<SiteRoutes>
+                render = Router::render(|switch: SiteRoutes| {
+                    match switch {
+                        SiteRoutes::About => html! {<about::AboutPage/>},
+                        SiteRoutes::MemePoke(state, code) => {
+                            if true { //place the condition for state here
+                                html! { <p>
+                                    {format!("hello the state is {} and the code is {}", state, code)} </p> }
+                            } else {
+                                html! { <error::ErrorPage/> }
+                            }
+                        },
+                        SiteRoutes::Denied(state) => html! {
+                            <p> {format!("hello the state is {} and the code is", state)} </p>
+                        },
+                        SiteRoutes::Login => html!{
+                            <p> {format!("hello this is login")} </p>
+                        },
+                        SiteRoutes::PageNotFound(Permissive(None)) => html! { <p>
+                            {"hello non permissive page not found"} </p>
+                        },
+                        SiteRoutes::PageNotFound(Permissive(Some(invalid_route))) => html! {
+                            <>
+                                <p> {format!("You this is an invalid route {}", invalid_route)}</p>
+                            </>
+                        }
+                    }
+                })
+            />
         }
     }
 }
