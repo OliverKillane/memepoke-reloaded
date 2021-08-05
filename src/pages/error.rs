@@ -2,6 +2,8 @@ use yew::prelude::*;
 
 pub struct ErrorPage;
 
+
+
 impl Component for ErrorPage {
     type Properties = ();
     type Message = ();
@@ -26,6 +28,7 @@ impl Component for ErrorPage {
                         <h1 class="h-5">{"MemePoke Reloaded!"}</h1>
                         <h1>{"Error!"}</h1>
                         <img src="img/memepoke.png" class="img-fluid" alt="Responsive image"/>
+
                         <a class="btn btn-primary btn-lg btn-block" href="">{"Return"}</a>
                     </div>
                 </div>

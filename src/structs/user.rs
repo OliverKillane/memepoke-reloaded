@@ -1,9 +1,9 @@
 use yew::prelude::*;
 
 pub struct User {
-    username: String,
-    description: String,
-    profile_pic_url: String,
+    pub username: String,
+    pub description: String,
+    pub profile_pic_url: String,
 }
 
 impl User {
@@ -24,7 +24,11 @@ impl User {
 
         // give up the token (no longer needed)
 
-        unimplemented!();
+        Self {
+            username: String::from("Bob"),
+            description: String::from("Mixologist"),
+            profile_pic_url: String::from("")
+        }
 
     }
 
@@ -56,7 +60,7 @@ impl User {
     }
 
     fn get_new_match(&self) {
-
+        
         /*
             Send new friend request to server
             - Server takes api request

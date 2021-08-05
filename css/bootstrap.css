@@ -67,7 +67,6 @@ body {
   color: #212529;
   text-align: left;
   background-color: #fff;
-  padding-top: 65px; /* added to avoid navbar covering parts of the page - Oliver Killane */
 }
 
 [tabindex="-1"]:focus {
