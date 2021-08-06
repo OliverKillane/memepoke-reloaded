@@ -1,13 +1,9 @@
-use yew::prelude::*;
+use yew::{prelude::*, web_sys::Node, web_sys::HtmlTextAreaElement};
 
 // user for sending details to and receiving from the server
-#[path = "../structs/user.rs"]
+#[path = "../user.rs"]
 mod user;
 use user::*;
-
-#[path = "../structs/meme.rs"]
-mod meme;
-use meme::*;
 
 #[derive(Properties, Clone)]
 pub struct AuthCode {
@@ -20,25 +16,20 @@ pub enum MemePokeState {
     AccountPage(AccountPageMsg)
 }
 
-enum MemePageMsg {
+pub enum MemePageMsg {
     Update,
-    Like,
-    Neutral,
-    Dislike
+    React(Reaction)
 }
 
-enum PokePageMsg {
+pub enum PokePageMsg {
     Update,
     GetNewMatch,
-    CancelRequest(String),
-    AcceptRequested(String),
-    RejectRequested(String),
-    RemoveFriend(String)
+    Social(String, SocialAction)
 }
 
-enum AccountPageMsg {
+pub enum AccountPageMsg {
     Update,
-    UpdateDescription(String)
+    UpdateDescription
 }
 
 struct Social {
@@ -52,17 +43,9 @@ pub struct MemePokePage {
     state: MemePokeState,
     user: User,
     meme: Meme,
-    social: Social
+    social: Social,
+    descr_box : NodeRef
     
-}
-
-//for testing:
-fn getmeme() -> Meme {
-    Meme {
-        post : String::from("When you realise the end of the world is made in china"),
-        image_url: String::from("https://static.toiimg.com/photo/74674393.cms"),
-        original_poster: String::from("Shrek")
-    }
 }
 
 
@@ -71,43 +54,50 @@ impl Component for MemePokePage {
     type Message = MemePokeState;
 
     fn create(auth_code: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let user = User::get_user(&auth_code.code);
+        let meme = user.get_meme();
         Self {
             link,
             state: MemePokeState::MemePage(MemePageMsg::Update),
-            user: User::get_user(auth_code.code),
-            meme: getmeme(),
-            social: Social { requests: vec![], requested: vec![], friends: vec![] }
+            user,
+            meme,
+            social: Social { requests: vec![], requested: vec![], friends: vec![] },
+            descr_box: NodeRef::default()
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         self.state = msg;
-        // match &self.state {
-        //     MemePokeState::MemePage(action) => {
-        //         match action {
-        //             MemePageMsg::Update => todo!(),
-        //             MemePageMsg::Like => todo!(),
-        //             MemePageMsg::Neutral => todo!(),
-        //             MemePageMsg::Dislike => todo!(),
-        //         }
-        //     },
-        //     MemePokeState::PokePage(action) => {
-        //         match action {
-        //             PokePageMsg::Update => todo!(),
-        //             PokePageMsg::GetNewMatch => todo!(),
-        //             PokePageMsg::CancelRequest(_) => todo!(),
-        //             PokePageMsg::AcceptRequested(_) => todo!(),
-        //             PokePageMsg::RejectRequested(_) => todo!(),
-        //             PokePageMsg::RemoveFriend(_) => todo!(),
-        //         }
-        //     },
-        //     MemePokeState::AccountPage(action) => {
-        //         match action {
-        //             AccountPageMsg::Update => todo!(),
-        //             AccountPageMsg::UpdateDescription(_) => todo!(),
-        //         }
-        //     },
-        // };
+        match &self.state {
+            MemePokeState::MemePage(action) => {
+                match action {
+                    MemePageMsg::Update => (),
+                    MemePageMsg::React(reaction) => {
+                        self.user.react_meme(self.meme.id, *reaction);
+                    }
+                }
+            },
+            MemePokeState::PokePage(action) => {
+                match action {
+                    PokePageMsg::Update => (),
+                    PokePageMsg::GetNewMatch => {
+                        self.user.get_new_match();
+                        self.social.requests = self.user.get_requests();
+                    },
+                    PokePageMsg::Social(username, action) => self.user.social(username, *action)
+                }
+            },
+            MemePokeState::AccountPage(action) => {
+                match action {
+                    AccountPageMsg::Update => (),
+                    AccountPageMsg::UpdateDescription => {
+                        if let Some(description_box) = self.descr_box.cast::<HtmlTextAreaElement>() {
+                            self.user.update_description(&description_box.value())
+                        }
+                    }
+                }
+            },
+        };
         true
     }
 
@@ -174,9 +164,9 @@ impl Component for MemePokePage {
                                         </div>
                                         <div class="d-flex justify-content-center">
                                             <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
-                                                <button onclick={self.link.callback(|_| MemePokeState::MemePage(MemePageMsg::Like))} type="button" class="btn btn-success">{"Fab"}</button>
-                                                <button onclick={self.link.callback(|_| MemePokeState::MemePage(MemePageMsg::Neutral))} type="button" class="btn btn-secondary">{"Meh"}</button>
-                                                <button onclick={self.link.callback(|_| MemePokeState::MemePage(MemePageMsg::Dislike))} type="button" class="btn btn-danger">{"Nah"}</button>
+                                                <button onclick={self.link.callback(|_| MemePokeState::MemePage(MemePageMsg::React(Reaction::Like)))} type="button" class="btn btn-success">{"Fab"}</button>
+                                                <button onclick={self.link.callback(|_| MemePokeState::MemePage(MemePageMsg::React(Reaction::Neutral)))} type="button" class="btn btn-secondary">{"Meh"}</button>
+                                                <button onclick={self.link.callback(|_| MemePokeState::MemePage(MemePageMsg::React(Reaction::Dislike)))} type="button" class="btn btn-danger">{"Nah"}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -196,17 +186,19 @@ impl Component for MemePokePage {
                                         </div>
 
                                         {
-                                            self.social.requests.iter().map(|request|
+                                            self.social.requests.iter().map(|request| {
+                                                let req_str = request.username.clone();
                                                 html! {
                                                     <div class="card" style="width: 18rem;">
                                                         <img class="card-img-top" src={request.profile_pic_url.clone()} alt="Card image cap" style="height: 18rem;"/>
                                                         <div class="card-body">
                                                             <h5 class="card-title">{&request.username}</h5>
                                                             <p class="card-text">{&request.description}</p>
-                                                            //<button onclick={self.link.callback(|_| MemePokeState::PokePage(PokePageMsg::CancelRequest(request.username)))} type="button" class="btn btn-danger">{"cancel"}</button>
+                                                            <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokePageMsg::Social(req_str.clone(), SocialAction::CancelRequest)))} type="button" class="btn btn-danger">{"cancel"}</button>
                                                         </div>
                                                     </div>
                                                 }
+                                            }
                                             ).collect::<Html>()
                                         }
                                     </div>
@@ -221,8 +213,8 @@ impl Component for MemePokePage {
                                             // Hence the create var -> move closure -> clone mess you see below:
                                             // I am very tired, will fix tommorow
                                             self.social.requested.iter().map(|requested| {  
-                                                let friend = requested.username.clone();
-                                                let friend2 = requested.username.clone();
+                                                let req_1 = requested.username.clone();
+                                                let req_2 = requested.username.clone();
                                                 html! {
                                                     <div class="card" style="width: 18rem;">
                                                         <img class="card-img-top" src={requested.profile_pic_url.clone()} alt="Card image cap" style="height: 18rem;"/>
@@ -230,8 +222,8 @@ impl Component for MemePokePage {
                                                         <h5 class="card-title">{&requested.username}</h5>
                                                         <p class="card-text">{&requested.description}</p>
                                                         <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
-                                                            <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokePageMsg::AcceptRequested(friend.clone())))} type="button" class="btn btn-success">{"accept"}</button>
-                                                            <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokePageMsg::RejectRequested(friend2.clone())))} type="button" class="btn btn-danger">{"ignore"}</button>
+                                                            <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokePageMsg::Social(req_1.clone(), SocialAction::AcceptRequested)))} type="button" class="btn btn-success">{"accept"}</button>
+                                                            <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokePageMsg::Social(req_2.clone(), SocialAction::RejectRequested)))} type="button" class="btn btn-danger">{"ignore"}</button>
                                                         </div>
                                                         </div>
                                                     </div>
@@ -245,7 +237,8 @@ impl Component for MemePokePage {
 
                                     <div class="d-flex flex-wrap align-content-stretch">
                                         {
-                                            self.social.friends.iter().map(|friend| 
+                                            self.social.friends.iter().map(|friend| {
+                                                let fr_str = friend.username.clone();
                                                 html! {
                                                     <div class="card" style="width: 18rem;">
                                                         <img class="card-img-top" src={friend.profile_pic_url.clone()} alt="Card image cap" style="height: 18rem;"/>
@@ -254,11 +247,11 @@ impl Component for MemePokePage {
                                                             <p class="card-text">{&friend.description}</p>
                                                             <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
                                                                 <a type="button" class="btn btn-primary">{"Chat"}</a>
-                                                                //<button onclick={self.link.callback(|_| MemePokeState::PokePage(PokePageMsg::RemoveFriend(friend.username)))} type="button" class="btn btn-secondary">{"Remove"}</button>
+                                                                <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokePageMsg::Social(fr_str.clone(), SocialAction::RemoveFriend)))} type="button" class="btn btn-secondary">{"Remove"}</button>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                }
+                                                }}
                                             ).collect::<Html>()
                                         }
                                     </div>
@@ -268,13 +261,12 @@ impl Component for MemePokePage {
                             MemePokeState::AccountPage(_) => html! {
                                 <div class = "d-flex justify-content-center">
                                     <div class="card mh-50 w-25">
-                                        <h1 class="h-5">{"MemePoke Reloaded!"}</h1>
+                                        <h1 class="h-5">{&self.user.username}</h1>
                                         <img src={self.user.profile_pic_url.clone()} class="img-fluid" alt="Responsive image"/>
-                                        <div class="input-group">
-                                            <div class="input-group-prepend">
-                                                <button class="btn btn-success" type="button">{"Update"}</button>
-                                            </div>
-                                            <input type="text" class="form-control" placeholder={self.user.description.clone()} aria-label="" aria-describedby="basic-addon1"/>
+                                        <div class="form-group">
+                                            <label for="exampleFormControlTextarea1">{"Large textarea"}</label>
+                                            <textarea ref=self.descr_box.clone() class="form-control rounded-0" id="exampleFormControlTextarea1" rows="2"></textarea>
+                                            <button onclick={self.link.callback(|_| MemePokeState::AccountPage(AccountPageMsg::UpdateDescription))}class="btn btn-primary btn-lg btn-block">{"Update"}</button>
                                         </div>
                                     </div>
                                 </div>

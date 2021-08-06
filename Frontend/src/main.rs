@@ -66,3 +66,15 @@ impl Component for MainPage {
 fn main() {
     yew::start_app::<MainPage>();
 }
+
+/*
+
+reddit:
+appID: WI5Q-r9Nu3EjSxIjz5SzEA
+direct to url: https://www.reddit.com/api/v1/authorize?client_id=WI5Q-r9Nu3EjSxIjz5SzEA&response_type=code&state=RANDOMSTRING&redirect_uri=http://127.0.0.1:8080/memepoke&duration=temporary&scope=identity
+
+redirects:
+http://127.0.0.1/memepoke?state=RANDOMSTRING&code=rx-5Ps6T60jF1UfbhS2QIsuTYHqXJw#_
+http://127.0.0.1/memepoke?state=RANDOMSTRING&error=access_denied#_
+
+*/
