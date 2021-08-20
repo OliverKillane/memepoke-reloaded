@@ -1,0 +1,11 @@
+c:\Oliver Killane's Files\B - Coding Projects\MemePoke 2.0\memepoke-reloaded\Backend\target\debug\deps\widestring-4a1f31f2c5002428.rmeta: C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\lib.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\platform\mod.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\platform\windows.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ucstr.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ucstring.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ustr.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ustring.rs
+
+c:\Oliver Killane's Files\B - Coding Projects\MemePoke 2.0\memepoke-reloaded\Backend\target\debug\deps\widestring-4a1f31f2c5002428.d: C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\lib.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\platform\mod.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\platform\windows.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ucstr.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ucstring.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ustr.rs C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ustring.rs
+
+C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\lib.rs:
+C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\platform\mod.rs:
+C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\platform\windows.rs:
+C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ucstr.rs:
+C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ucstring.rs:
+C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ustr.rs:
+C:\Users\olive\.cargo\registry\src\github.com-1ecc6299db9ec823\widestring-0.4.3\src\ustring.rs:

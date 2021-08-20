@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/memepoke.css">
+    <title>MemePoke Reloaded</title>
+  </head>
+</html>
+<body style="padding-top: 65px;">
+    <nav class="class=navbar fixed-top navbar-light bg-light">
+        <div class="d-flex text-white">
+            <div class="p-2 w-100">
+                <div class="d-flex justify-content-center">
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary">
+                            <input type="checkbox" checked autocomplete="off"> Meme
+                        </label>
+                        <label class="btn btn-primary active">
+                            <input type="checkbox" autocomplete="off"> Poke
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="p-2 flex-shrink-0">
+                <button type="button" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <h1>Sent Requests:</h1>
+
+    <div class="d-flex flex-wrap align-content-stretch">
+        <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src="../img/question mark.png" alt="Card image cap" style="height: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">Get a new Match</h5>
+                <p class="card-text">Find someone with the same good taste in der memes</p>
+                <button type="button" class="btn btn-success">Get</button>
+            </div>
+        </div>
+        <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src="../img/reddit profile.png" alt="Card image cap" style="height: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">Reddit User</h5>
+                <p class="card-text">Also liked that meme</p>
+                <button type="button" class="btn btn-danger">cancel</button>
+            </div>
+        </div>
+    </div>
+    <h1>Recieved Requests:</h1>
+
+    <div class="d-flex flex-wrap align-content-stretch">
+        <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src="../img/reddit profile.png" alt="Card image cap" style="height: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title">Reddit User</h5>
+              <p class="card-text">Also liked that meme</p>
+              <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-success">accept</button>
+                <button type="button" class="btn btn-danger">ignore</button>
+              </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <h1>Friends:</h1>
+
+    <div class="d-flex flex-wrap align-content-stretch">
+        <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src="../img/reddit profile.png" alt="Card image cap" style="height: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title">Reddit User</h5>
+              <p class="card-text">Also liked that meme</p>
+              <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-primary">Chat</button>
+                <button type="button" class="btn btn-secondary">Remove</button>
+              </div>
+            </div>
+        </div>
+    </div>
+</body>
