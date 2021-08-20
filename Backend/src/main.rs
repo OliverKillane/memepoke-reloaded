@@ -1,3 +1,4 @@
+use actix_files as fs;
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, middleware::Logger, web};
 use serde::{Deserialize,Serialize};
 use env_logger::Env;
@@ -152,6 +153,7 @@ async fn main() -> std::io::Result<()> {
         .service(get_user_social)
         .service(login_user)
         .service(update_user_descr)
+        .service(fs::Files::new("/memepoke", "../Frontend/dist").index_file("index.html"))
     })
     .bind("127.0.0.1:8080")?
     .run()
