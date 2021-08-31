@@ -84,7 +84,7 @@ impl Component for MemePokePage {
         Self {
             link,
             state: MemePokeState::MemePage(MemeState::GetMeme),
-            user : User { username: props.username, id: props.id, description: props.description, profile_pic_url: props.profile_pic_url, auth_token: props.auth_token },
+            user : User { username: props.username, description: props.description, profile_pic_url: props.profile_pic_url, auth_token: props.auth_token },
             meme: None,
             social: None,
             descr_box: NodeRef::default()
@@ -259,7 +259,7 @@ impl MemePokePage {
                                     <img class="card-img-top" src={request.profile_pic_url.clone()} alt="Card image cap" style="height: 18rem;"/>
                                     <div class="card-body">
                                         <h5 class="card-title">{&request.username}</h5>
-                                        <p class="card-text">{&request.description.clone().unwrap_or(String::from("No Description"))}</p>
+                                        <p class="card-text">{&request.description.clone()}</p>
                                         <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokeState::Action(SocialAction::CancelRequest, req_str.clone())))} type="button" class="btn btn-danger">{"cancel"}</button>
                                     </div>
                                 </div>
@@ -286,7 +286,7 @@ impl MemePokePage {
                                     <img class="card-img-top" src={requested.profile_pic_url.clone()} alt="Card image cap" style="height: 18rem;"/>
                                     <div class="card-body">
                                     <h5 class="card-title">{&requested.username}</h5>
-                                    <p class="card-text">{&requested.description.clone().unwrap_or(String::from("No Description"))}</p>
+                                    <p class="card-text">{&requested.description.clone()}</p>
                                     <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
                                         <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokeState::Action(SocialAction::AcceptRequested, req_1.clone())))} type="button" class="btn btn-success">{"accept"}</button>
                                         <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokeState::Action(SocialAction::RejectRequested, req_2.clone())))} type="button" class="btn btn-danger">{"ignore"}</button>
@@ -310,7 +310,7 @@ impl MemePokePage {
                                     <img class="card-img-top" src={friend.profile_pic_url.clone()} alt="Card image cap" style="height: 18rem;"/>
                                     <div class="card-body">
                                         <h5 class="card-title">{&friend.username}</h5>
-                                        <p class="card-text">{&friend.description.clone().unwrap_or(String::from("No Description"))}</p>
+                                        <p class="card-text">{&friend.description.clone()}</p>
                                         <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
                                             <a type="button" class="btn btn-primary">{"Chat"}</a>
                                             <button onclick={self.link.callback(move |_| MemePokeState::PokePage(PokeState::Action(SocialAction::RemoveFriend, fr_str.clone())))} type="button" class="btn btn-secondary">{"Remove"}</button>
@@ -326,7 +326,7 @@ impl MemePokePage {
     }
 
     fn view_accountpage(&self) -> Html {
-        let descr = self.user.description.clone().unwrap_or(String::from("No Description"));
+        let descr = self.user.description.clone();
         html! {
             <div class = "d-flex justify-content-center">
                 <div class="card mh-50 w-25">

@@ -4,7 +4,6 @@ use yew::{Html, html};
 // app constants
 pub const client_id : &str = "WI5Q-r9Nu3EjSxIjz5SzEA";
 pub const redirect_uri : &str = "http://127.0.0.1:8080/memepoke";
-pub const about_uri : &str = "http://127.0.0.1:8080/about";
 pub const site_uri : &str = "http://127.0.0.1:8080";
 
 // useful pages
@@ -16,7 +15,7 @@ pub fn view_error(message : &str) -> Html {
                     <h1 class="h-5">{"Error!"}</h1>
                     <img src="img/memepoke.png" class="img-fluid" alt="Responsive image"/>
                     <p>{message}</p>
-                    <a class="btn btn-primary btn-lg btn-block" href=site_uri>{"Back to Login"}</a>
+                    <a class="btn btn-primary btn-lg btn-block" href=redirect_uri>{"Back to Login"}</a>
                 </div>
             </div>
         </div>
@@ -33,7 +32,7 @@ pub fn view_loading(message : &str) -> Html {
                     <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
                         <span class="sr-only">{message}</span>
                     </div>
-                    <a class="btn btn-primary btn-lg btn-block" href=site_uri>{"Back to Login"}</a>
+                    <a class="btn btn-primary btn-lg btn-block" href=redirect_uri>{"Back to Login"}</a>
                 </div>
             </div>
         </div>

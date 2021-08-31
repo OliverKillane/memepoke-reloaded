@@ -1,7 +1,14 @@
 use actix_files as fs;
-use actix_web::{App, HttpResponse, HttpServer, Responder, get, middleware::Logger, web};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, middleware::Logger, web::{self, Json}};
 use serde::{Deserialize,Serialize};
 use env_logger::Env;
+use awc::Client;
+use serde_json::Value;
+use std::str;
+
+// CONSTANTS:
+const CLIENT_ID : &str = "WI5Q-r9Nu3EjSxIjz5SzEA";
+const REDIRECT_URI : &str = "http://127.0.0.1:8080/memepoke";
 
 #[derive(Deserialize)]
 struct UserReq {
@@ -9,134 +16,80 @@ struct UserReq {
     authtoken : String
 }
 
-// UPDATE USER DESCRIPTION:
-#[derive(Deserialize)]
-struct UpdateDescrReq {
-    username : String,
-    authtoken : String,
-    descr : String
-}
-
-#[get("/updatedescr&user={username}&token={authtoken}&descr={descr}")]
-async fn update_user_descr(info : web::Path<UpdateDescrReq>) -> impl Responder {
-    HttpResponse::Ok()
-}
-
 
 // LOGIN THE USER:
-#[get("/loginuser&user={username}&token={authtoken}")]
-async fn login_user(info : web::Path<UserReq>) -> impl Responder {
-    HttpResponse::Ok().body("This is the user description")
+#[derive(Deserialize)]
+struct LoginReq {
+    code : String
 }
 
+/*
+{
+    "access_token": Your access token,
+    "token_type": "bearer",
+    "expires_in": Unix Epoch Seconds,
+    "scope": A scope string,
+    "refresh_token": Your refresh token
+}
+*/
 
-// GET USER SOCIAL INFORMATION:
+#[derive(Deserialize)]
+struct RedditAuthResp {
+    access_token : String,
+    token_type : String,
+    expires_in : i32,
+    scope : String,
+}
+
 #[derive(Serialize)]
 struct User {
-    pub username: String,
-    pub id: String,
-    pub description: Option<String>,
-    pub profile_pic_url: String,
+    username: String,
+    description: String,
+    profile_pic_url: String,
+    auth_token: String
 }
 
-#[derive(Serialize)]
-struct Social {
-    requests : Vec<User>,
-    requested : Vec<User>,
-    friends : Vec<User>
+#[get("/loginuser&code={code}")]
+async fn login_user(info : web::Path<LoginReq>) -> impl Responder {
+    let client = Client::default();
+
+    // use code to get auth token
+    if let Ok(mut resp) = 
+        client
+            .post("https://www.reddit.com/api/v1/access_token")
+            .basic_auth(CLIENT_ID, None)
+            .header("User-Agent", "Memepoke/2.0 Running from actix web server")
+            .send_form(&[("grant_type","authorization_code"), ("code", info.code.as_str()), ("redirect_uri", REDIRECT_URI)])
+            .await
+    {
+        if let Ok(data) = resp.json::<RedditAuthResp>().await {
+            let auth = data.access_token;
+            println!("Auth: {}", auth);
+
+            // use auth token to get user id
+            if let Ok(mut resp) = 
+                client
+                    .get("https://oauth.reddit.com/api/v1/me")
+                    .header("Authorization", format!("Bearer {}", auth))
+                    .header("User-Agent", "Memepoke/2.0 Running from actix web server")
+                    .send()
+                    .await 
+            {
+                let s = resp.body().await.unwrap(); 
+                let y = str::from_utf8(&s).unwrap();
+                let v = serde_json::from_str::<Value>(y).unwrap();
+
+                return HttpResponse::Ok().json(User {
+                    username: v["name"].to_string(),
+                    description: String::from("this is descr"),
+                    profile_pic_url: v["icon_img"].to_string(),
+                    auth_token: auth
+                });
+            }
+        } 
+    }
+    HttpResponse::Forbidden().body("Invalid Request")
 }
-
-
-#[get("/getsocial&user={username}&token={authtoken}")]
-async fn get_user_social(info : web::Path<UserReq>) -> impl Responder {
-
-    //**************************************************************************
-    let placeholder = User {
-        username: String::from("Username Here"),
-        id: String::from("Id here"),
-        description: Some(String::from("This is the description of the user")),
-        profile_pic_url: String::from("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAs_TDUTeHiZQ1tqLJlvItaBOjcmRTeoSbHw&usqp=CAU"),
-    };
-
-    let example_social = Social {
-        requests: vec![placeholder],
-        requested: vec![],
-        friends: vec![],
-    };
-    //**************************************************************************
-
-    HttpResponse::Ok().json( example_social )
-}
-
-// DO USER ACTION
-#[derive(Deserialize)]
-struct SetSocialReq {
-    username : String,
-    authtoken : String,
-    action : String,
-    otheruser : String
-}
-
-#[get("/setsocial&user={username}&token={authtoken}&action={action}&other={otheruser}")]
-async fn set_user_social(info : web::Path<SetSocialReq>) -> impl Responder {
-    HttpResponse::Ok()
-}
-
-// GET USER NEW MATCH
-#[get("/getmatch&user={username}&token={authtoken}")]
-async fn get_match(info : web::Path<UserReq>) -> impl Responder {
-    HttpResponse::Ok()
-}
-
-// GET USER NEW MEME
-#[derive(Serialize)]
-struct Meme {
-    id: u64,
-    post : String,
-    image_url: String,
-    original_poster: String
-}
-
-#[get("/getmeme&user={username}&token={authtoken}")]
-async fn get_meme(info : web::Path<UserReq>) -> impl Responder {
-
-    //**************************************************************************
-    let placeholder = Meme {
-        id: 111,
-        post: String::from("https://www.reddit.com/r/Shrekmemes/comments/oxipnn/when_the_villagers_dont_find_onions/"),
-        image_url: String::from("https://i.redd.it/jp1bitzz29f71.jpg"),
-        original_poster: String::from("Cwf97"),
-    };
-
-    //**************************************************************************
-
-    HttpResponse::Ok().json( placeholder )
-}
-
-// USER REACT TO MEME
-struct MemeReactReq {
-    username : String,
-    authtoken : String,
-}
-
-// CHECKING USER:
-
-#[derive(Deserialize)]
-struct UserResp {
-    comment_karma : i32,
-    created : String,
-    created_utc : String,
-    has_mail : String,
-    has_mod_mail : bool,
-    has_verified_email : String,
-    id : String,
-    is_gold : bool,
-    is_mod : bool,
-    link_karma : i32,
-    name : String,
-    over_18 : bool
-}
-
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -147,13 +100,9 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
         .wrap(Logger::new("IP: %a | TIME: %t | REQUEST: %r | PROCESSED IN: %Dms"))
-        .service(get_meme)
-        .service(get_match)
-        .service(set_user_social)
-        .service(get_user_social)
         .service(login_user)
-        .service(update_user_descr)
-        .service(fs::Files::new("/memepoke", "../Frontend/dist").index_file("index.html"))
+        .service(fs::Files::new("/memepoke", "./static").index_file("index.html"))
+        .service(fs::Files::new("/", "./static/"))
     })
     .bind("127.0.0.1:8080")?
     .run()

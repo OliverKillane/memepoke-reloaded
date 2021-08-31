@@ -1,2 +1,4 @@
 Backend/target/
+Backend/static/
 Frontend/target/
+Frontend/dist

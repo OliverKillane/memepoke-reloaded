@@ -26,7 +26,7 @@ impl Component for MainPage {
 
     fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self { Self }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender { false }
+    fn update(&mut self, _: Self::Message) -> ShouldRender { false }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender { false }
 
@@ -43,7 +43,7 @@ impl Component for MainPage {
                             }
                         },
                         SiteRoutes::Denied(state) => html! {
-                            utils::view_error("Memepoke reddit access denied")
+                            utils::view_error(format!("Memepoke reddit access denied: {}", state).as_str())
                         },
                         SiteRoutes::Login => html! {
                             <div class="bg-image" style="background-image: url('img/shrek.gif');height: 100vh">
