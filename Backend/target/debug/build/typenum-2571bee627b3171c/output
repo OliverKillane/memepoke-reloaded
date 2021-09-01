@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=c:\Oliver Killane's Files\B - Coding Projects\MemePoke 2.0\memepoke-reloaded\Backend\target\debug\build\typenum-2571bee627b3171c\out\consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=c:\Oliver Killane's Files\B - Coding Projects\MemePoke 2.0\memepoke-reloaded\Backend\target\debug\build\typenum-2571bee627b3171c\out\op.rs
