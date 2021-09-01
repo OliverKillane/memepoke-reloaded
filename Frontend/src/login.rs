@@ -55,7 +55,7 @@ impl Component for LoginPage {
             LoginMsg::Failure => view_error("Failed to get fetch user details."),
             LoginMsg::GotUser(user) => 
                 html! {
-                    <memepoke::MemePokePage username=user.username.clone() description=user.description.clone() profile_pic_url=user.profile_pic_url.clone() auth_token=user.auth_token.clone()/>
+                    <memepoke::MemePokePage username=user.username.clone() id = user.id description=user.description.clone() profile_pic_url=user.profile_pic_url.clone() auth_token=user.auth_token.clone()/>
                 }
         }
     }

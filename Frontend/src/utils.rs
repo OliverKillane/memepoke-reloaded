@@ -9,7 +9,7 @@ pub const site_uri : &str = "http://127.0.0.1:8080";
 // useful pages
 pub fn view_error(message : &str) -> Html {
     html! {
-        <div class="bg-image" style="background-image: url('img/shrek.gif');height: 100vh">
+        <div class="bg-image" style="background-image: url('img/memepoke.png');height: 100vh">
             <div class = "d-flex justify-content-center">
                 <div class="card mh-50 w-25">
                     <h1 class="h-5">{"Error!"}</h1>
@@ -24,7 +24,7 @@ pub fn view_error(message : &str) -> Html {
 
 pub fn view_loading(message : &str) -> Html {
     html! {
-        <div class="bg-image" style="background-image: url('img/shrek.gif');height: 100vh">
+        <div class="bg-image" style="background-image: url('img/memepoke.png');height: 100vh">
             <div class = "d-flex justify-content-center">
                 <div class="card mh-50 w-25">
                     <h1 class="h-5">{"Loading"}</h1>

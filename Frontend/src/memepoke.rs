@@ -1,4 +1,6 @@
-use yew::prelude::*;
+use yew::{prelude::*, format::{Json, Nothing}, services::{fetch::{FetchService, FetchTask, Request, Response}}};
+use anyhow;
+use serde::Deserialize;
 
 // user for sending details to and receiving from the server
 #[path = "utils.rs"]
@@ -8,9 +10,9 @@ mod utils;
 mod user;
 use user::User;
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize)]
 pub struct Meme {
-    pub id: u64,
+    pub meme_id: u64,
     pub post : String,
     pub image_url: String,
     pub original_poster: String
@@ -35,7 +37,9 @@ pub enum SocialAction {
 pub enum MemePokeState {
     MemePage(MemeState),
     PokePage(PokeState),
-    AccountPage(AccountState)
+    AccountPage(AccountState),
+    Welcome,
+    Error(String)
 }
 
 pub enum MemeState {
@@ -73,7 +77,8 @@ pub struct MemePokePage {
     user: User,
     meme: Option<Meme>,
     social: Option<Social>,
-    descr_box : NodeRef
+    descr_box : NodeRef,
+    ft : Option<FetchTask>
 }
 
 impl Component for MemePokePage {
@@ -83,11 +88,12 @@ impl Component for MemePokePage {
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             link,
-            state: MemePokeState::MemePage(MemeState::GetMeme),
-            user : User { username: props.username, description: props.description, profile_pic_url: props.profile_pic_url, auth_token: props.auth_token },
+            state: MemePokeState::Welcome,
+            user : User { username: props.username, id :  props.id, description: props.description, profile_pic_url: props.profile_pic_url, auth_token: props.auth_token },
             meme: None,
             social: None,
-            descr_box: NodeRef::default()
+            descr_box: NodeRef::default(),
+            ft: None
         }
     }
 
@@ -97,9 +103,9 @@ impl Component for MemePokePage {
         match &self.state {
             MemePokeState::MemePage(state) => 
                 match state {
-                    MemeState::GetMeme => todo!(),
-                    MemeState::React(_,_) => todo!(),
-                    MemeState::Display(_) => todo!(),
+                    MemeState::GetMeme => self.setfetch(get_meme(&self.link, &self.user.username, self.user.id)),
+                    MemeState::React(reaction,meme) => self.setfetch(react_meme(&self.link, &self.user.username, self.user.id, meme.meme_id, *reaction)),
+                    _ => ()
                 }
             ,
             MemePokeState::PokePage(state) => {
@@ -117,6 +123,7 @@ impl Component for MemePokePage {
                     AccountState::Display => todo!(),
                 }
             },
+            _ => ()
         };
         true
     }
@@ -171,9 +178,11 @@ impl Component for MemePokePage {
                                 match state {
                                     AccountState::GetDescr => utils::view_loading("Loading Account Info"),
                                     AccountState::UpdateDescr => utils::view_loading("Sending updated description"),
-                                    AccountState::Display => todo!(),
+                                    AccountState::Display => self.view_accountpage(),
                                 }
                             },
+                            MemePokeState::Welcome => self.view_welcome(),
+                            MemePokeState::Error(msg) => utils::view_error(&format!("An unexpected failure occured: {}", msg))
                         }
                     }
                 </div>
@@ -187,7 +196,6 @@ impl Component for MemePokePage {
 }
 
 impl MemePokePage {
-
     fn view_navbar(&self) -> Html {
         html! {
             <nav class="class=navbar fixed-top navbar-light bg-light">
@@ -218,7 +226,7 @@ impl MemePokePage {
                                                 <button type="button" class="btn btn-primary">{"Poke"}</button>
                                             </>
                                         },
-                                        MemePokeState::AccountPage(_) =>  html!{
+                                        _ =>  html!{
                                             <>
                                                 <button onclick={self.link.callback(|_| MemePokeState::MemePage(MemeState::GetMeme))} type="button" class="btn btn-outline-primary">{"Meme"}</button>
                                                 <button onclick={self.link.callback(|_| MemePokeState::PokePage(PokeState::GetSocial))} type="button" class="btn btn-outline-primary">{"Poke"}</button>
@@ -230,7 +238,7 @@ impl MemePokePage {
                         </div>
                     </div>
                     <div class="p-2 flex-shrink-0">
-                        <a href="#" type="button" class="btn btn-danger">{"Logout"}</a>
+                        <a href={utils::redirect_uri} type="button" class="btn btn-danger">{"Logout"}</a>
                     </div>
                 </div>
             </nav>
@@ -364,4 +372,76 @@ impl MemePokePage {
             </div>
         }
     }
+
+    fn view_welcome(&self) -> Html {
+        html! {
+            <div class="bg-image" style="background-image: url('img/memepoke.png');height: 100vh">
+                <div class = "d-flex justify-content-center">
+                    <div class="card  mw-50 mh-50">
+                        <div class="d-flex justify-content-center">
+                            <h1>{format!("{} Welcome to MemePoke Reloaded", self.user.username)}</h1>
+                        </div>
+                        <h2>{"Feel free to review memes, get matches and make new friends."}</h2>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    fn setfetch(&mut self, ft : FetchTask) {
+        self.ft = Some(ft)
+    }
 }
+
+/*
+
+pub fn get_user(code: String, link: &ComponentLink<LoginPage>) -> FetchTask {
+    let req = Request::get(format!("{}/loginuser&code={}", utils::site_uri, code)).body(Nothing).unwrap();
+
+    let callback = link.callback(|response: Response<Json<anyhow::Result<User>>>| {
+        if let Json(Ok(data)) = response.into_body() {
+            LoginMsg::GotUser(data)
+        } else {
+            LoginMsg::Failure
+        }
+    });
+
+    FetchService::fetch(req, callback).unwrap()
+}
+*/
+
+fn get_meme(link : &ComponentLink<MemePokePage>, username : &str, id : i32) -> FetchTask {
+    let req = Request::get(format!("{url}/getmeme&user={user}&id={id}", url = utils::site_uri, user = username, id = id)).body(Nothing).unwrap();
+
+    let callback = link.callback(|response: Response<Json<anyhow::Result<Meme>>>| {
+        if let Json(Ok(data)) = response.into_body() {
+            MemePokeState::MemePage(MemeState::Display(data))
+        } else {
+            MemePokeState::Error(String::from("Failed to load meme"))
+        }
+    });
+
+    FetchService::fetch(req, callback).unwrap()
+}
+
+fn react_meme(link : &ComponentLink<MemePokePage>, username : &str, id : i32, meme_id : u64, reaction : Reaction) -> FetchTask {
+    let req = Request::get(format!("{url}/reactmeme&user={user}&id={id}&meme={meme}&react={react}", url = utils::site_uri, user = username, id = id, meme = meme_id, react = match reaction {
+        Reaction::Like => 0,
+        Reaction::Neutral => 1,
+        Reaction::Dislike => 2
+    })).body(Nothing).unwrap();
+
+    let callback = link.callback(|response: Response<Json<anyhow::Result<Meme>>>| {
+        if let Json(Ok(data)) = response.into_body() {
+            MemePokeState::MemePage(MemeState::Display(data))
+        } else {
+            MemePokeState::Error(String::from("Failed to load meme"))
+        }
+    });
+
+    FetchService::fetch(req, callback).unwrap()
+}
+
+
+
+

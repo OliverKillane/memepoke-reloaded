@@ -23,16 +23,6 @@ struct LoginReq {
     code : String
 }
 
-/*
-{
-    "access_token": Your access token,
-    "token_type": "bearer",
-    "expires_in": Unix Epoch Seconds,
-    "scope": A scope string,
-    "refresh_token": Your refresh token
-}
-*/
-
 #[derive(Deserialize)]
 struct RedditAuthResp {
     access_token : String,
@@ -44,6 +34,7 @@ struct RedditAuthResp {
 #[derive(Serialize)]
 struct User {
     username: String,
+    id: i32,
     description: String,
     profile_pic_url: String,
     auth_token: String
@@ -81,6 +72,7 @@ async fn login_user(info : web::Path<LoginReq>) -> impl Responder {
 
                 return HttpResponse::Ok().json(User {
                     username: v["name"].to_string(),
+                    id : 0, // to be changed later, PLACEHOLDER
                     description: String::from("this is descr"),
                     profile_pic_url: v["icon_img"].to_string(),
                     auth_token: auth
@@ -91,6 +83,65 @@ async fn login_user(info : web::Path<LoginReq>) -> impl Responder {
     HttpResponse::Forbidden().body("Invalid Request")
 }
 
+// GET A NEW MEME
+#[derive(Deserialize)]
+struct UserAuth {
+    user : String,
+    id : i32
+}
+
+#[derive(Serialize)]
+pub struct Meme {
+    pub meme_id: u64,
+    pub post : String,
+    pub image_url: String,
+    pub original_poster: String
+}
+
+fn get_new_meme(id : i32) -> Meme {
+
+    //PLACEHOLDER
+    Meme {
+        meme_id: 0,
+        post: String::from("https://www.reddit.com/r/memes/comments/pfnpjr/hes_back/"),
+        image_url: String::from("https://i.redd.it/m1yj6uixztk71.jpg"),
+        original_poster: String::from("daffox123"),
+    }
+}
+
+
+#[get("/getmeme&user={user}&id={id}")]
+async fn get_meme(info : web::Path<UserAuth>) -> impl Responder {
+    // check auth for id, username
+
+    HttpResponse::Ok().json(get_new_meme(info.id))
+}
+
+#[derive(Deserialize)]
+struct ReactMeme {
+    user : String,
+    id : i32,
+    meme : u64,
+    react : i32
+}
+
+#[get("/reactmeme&user={user}&id={id}&meme={meme}&react={react}")]
+async fn react_meme(info : web::Path<ReactMeme>) -> impl Responder {
+    // check auth for id, username
+
+    println!("User reacted: {}", match info.react {
+        0 => "Good",
+        1 => "Neutral",
+        2 => "Bad",
+        _ => "Unknown"
+    });
+
+    HttpResponse::Ok().json(get_new_meme(info.id))
+}
+
+
+
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
@@ -99,12 +150,14 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-        .wrap(Logger::new("IP: %a | TIME: %t | REQUEST: %r | PROCESSED IN: %Dms"))
-        .service(login_user)
-        .service(fs::Files::new("/memepoke", "./static").index_file("index.html"))
-        .service(fs::Files::new("/", "./static/"))
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+            .wrap(Logger::new("IP: %a | TIME: %t | REQUEST: %r | PROCESSED IN: %Dms"))
+            .service(login_user)
+            .service(get_meme)
+            .service(react_meme)
+            .service(fs::Files::new("/memepoke", "./static").index_file("index.html"))
+            .service(fs::Files::new("/", "./static/"))
+        })
+        .bind("127.0.0.1:8080")?
+        .run()
+        .await
 }
