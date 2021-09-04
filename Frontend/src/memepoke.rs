@@ -55,7 +55,7 @@ pub enum PokeState {
     Display(Social),
 }
 
-pub enum AccountState{
+pub enum AccountState {
     GetDescr,
     UpdateDescr,
     Display,
@@ -63,6 +63,7 @@ pub enum AccountState{
 
 
 // social Struct to contain user info
+#[derive(Deserialize)]
 struct Social {
     requests: Vec<User>,
     requested: Vec<User>,
@@ -110,10 +111,10 @@ impl Component for MemePokePage {
             ,
             MemePokeState::PokePage(state) => {
                 match state {
-                    PokeState::Action(_, _) => todo!(),
-                    PokeState::Display(_) => todo!(),
-                    PokeState::GetSocial => todo!(),
-                    PokeState::GetNewMatch => todo!(),
+                    PokeState::Action(action, otheruser) => self.setfetch(send_social_action(&self.link, &self.user.username, self.user.id, otheruser, *action)),
+                    PokeState::GetSocial => self.setfetch(get_social(&self.link, &self.user.username, self.user.id)),
+                    PokeState::GetNewMatch => self.setfetch(get_new_match(&self.link, &self.user.username, self.user.id)),
+                    _ => ()
                 }
             },
             MemePokeState::AccountPage(state) => {
@@ -410,6 +411,9 @@ pub fn get_user(code: String, link: &ComponentLink<LoginPage>) -> FetchTask {
 }
 */
 
+
+/* Retrieve a meme from the backend, and create a corresponding event to update the GUI
+*/
 fn get_meme(link : &ComponentLink<MemePokePage>, username : &str, id : i32) -> FetchTask {
     let req = Request::get(format!("{url}/getmeme&user={user}&id={id}", url = utils::site_uri, user = username, id = id)).body(Nothing).unwrap();
 
@@ -424,6 +428,10 @@ fn get_meme(link : &ComponentLink<MemePokePage>, username : &str, id : i32) -> F
     FetchService::fetch(req, callback).unwrap()
 }
 
+
+/* Send a meme react and get the new meme to display
+note: the reaction enum is encoded as [0,2]
+*/
 fn react_meme(link : &ComponentLink<MemePokePage>, username : &str, id : i32, meme_id : u64, reaction : Reaction) -> FetchTask {
     let req = Request::get(format!("{url}/reactmeme&user={user}&id={id}&meme={meme}&react={react}", url = utils::site_uri, user = username, id = id, meme = meme_id, react = match reaction {
         Reaction::Like => 0,
@@ -435,7 +443,60 @@ fn react_meme(link : &ComponentLink<MemePokePage>, username : &str, id : i32, me
         if let Json(Ok(data)) = response.into_body() {
             MemePokeState::MemePage(MemeState::Display(data))
         } else {
-            MemePokeState::Error(String::from("Failed to load meme"))
+            MemePokeState::Error(String::from("Failed to send reaction and load meme"))
+        }
+    });
+
+    FetchService::fetch(req, callback).unwrap()
+}
+/* Send a social action, the user it relates to.
+note: Socialaction enum is encoded as [0-3]
+*/
+fn get_social(link : &ComponentLink<MemePokePage>, username : &str, id : i32) -> FetchTask {
+    let req = Request::get(format!("/getsocial&user={user}&id={id}", user = username, id = id)).body(Nothing).unwrap();
+
+    let callback = link.callback(|response: Response<Json<anyhow::Result<Social>>>| {
+        if let Json(Ok(data)) = response.into_body() {
+            MemePokeState::PokePage(PokeState::Display(data))
+        }
+        else {
+            MemePokeState::Error(String::from("Failed to load social information"))
+        }
+    });
+
+    FetchService::fetch(req, callback).unwrap()
+}
+
+fn get_new_match(link : &ComponentLink<MemePokePage>, username : &str, id : i32) -> FetchTask {
+    let req = Request::get(format!("/getnewmatch&user={user}&id={id}", user = username, id = id)).body(Nothing).unwrap();
+
+    let callback = link.callback(|response: Response<Json<anyhow::Result<Social>>>| {
+        if let Json(Ok(data)) = response.into_body() {
+            MemePokeState::PokePage(PokeState::Display(data))
+        }
+        else {
+            MemePokeState::Error(String::from("Failed to load social information"))
+        }
+    });
+
+    FetchService::fetch(req, callback).unwrap()
+}
+
+
+fn send_social_action(link : &ComponentLink<MemePokePage>, username : &str, id : i32, otheruser : &str, action: SocialAction) -> FetchTask {
+    let req = Request::get(format!("/socialaction&user={user}&id={id}&other={other}&action={action}", user = username, id = id, other = otheruser, action = match action {
+        SocialAction::CancelRequest => 0,
+        SocialAction::AcceptRequested => 1,
+        SocialAction::RejectRequested => 2,
+        SocialAction::RemoveFriend => 3
+    })).body(Nothing).unwrap();
+
+    let callback = link.callback(|response: Response<Json<anyhow::Result<Social>>>| {
+        if let Json(Ok(data)) = response.into_body() {
+            MemePokeState::PokePage(PokeState::Display(data))
+        }
+        else {
+            MemePokeState::Error(String::from("Failed to send social action & load social information"))
         }
     });
 

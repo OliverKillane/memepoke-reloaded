@@ -140,6 +140,67 @@ async fn react_meme(info : web::Path<ReactMeme>) -> impl Responder {
 }
 
 
+// GET SOCIAL INFORMATION
+
+#[derive(Serialize)]
+struct Social {
+    requests: Vec<User>,
+    requested: Vec<User>,
+    friends: Vec<User>
+}
+
+fn get_social(user : String) -> Social {
+    Social {
+        requests : Vec::new(),
+        requested: Vec::new(),
+        friends: Vec::new(),
+    }
+}
+
+#[derive(Deserialize)]
+struct SocialActionReq {
+    user : String,
+    id : i32,
+    other : String,
+    action : i32
+}
+
+#[get("/getsocial&user={user}&id={id}")]
+async fn get_user_social(info : web::Path<UserAuth>) -> impl Responder {
+    // check auth for id, username
+
+    HttpResponse::Ok().json(get_social(info.user.clone()))
+}
+
+#[get("/getnewmatch&user={user}&id={id}")]
+async fn get_new_match(info : web::Path<UserAuth>) -> impl Responder {
+    // check out id
+
+    // find a new match
+
+    HttpResponse::Ok().json(get_social(info.user.clone()))
+}
+
+#[get("/socialaction&user={user}&id={id}&other={other}&action={action}")]
+async fn social_action(info : web::Path<SocialActionReq>) -> impl Responder {
+    // check auth for id, username
+
+    // do action based on info.other, info.action
+    println!("Got social action {}", match info.action {
+        0 => "CancelRequest",
+        1 => "AcceptRequested",
+        2 => "RejectRequested",
+        3 => "RemoveFriend",
+        _ => "Error!!"
+    });
+
+    // get social information and return
+
+    HttpResponse::Ok().json(get_social(info.user.clone()))
+}
+
+
+
 
 
 #[actix_web::main]
@@ -154,6 +215,9 @@ async fn main() -> std::io::Result<()> {
             .service(login_user)
             .service(get_meme)
             .service(react_meme)
+            .service(get_user_social)
+            .service(get_new_match)
+            .service(social_action)
             .service(fs::Files::new("/memepoke", "./static").index_file("index.html"))
             .service(fs::Files::new("/", "./static/"))
         })
