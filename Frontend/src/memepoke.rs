@@ -144,14 +144,14 @@ impl Component for MemePokePage {
                                 match state {
                                     MemeState::GetMeme => utils::view_loading("Getting Meme"),
                                     MemeState::React(reaction, _) => utils::view_loading(
-                                        &*format!(
+                                        format!(
                                             "Reacting {} to Meme",
                                             match reaction {
                                                 Reaction::Like =>  "👍",
                                                 Reaction::Neutral => "🤔",
                                                 Reaction::Dislike => "👎"
                                             }
-                                        )
+                                        ).as_str()
                                     ),
                                     MemeState::Display(meme) => self.view_memepage(meme)
                                 }
@@ -160,7 +160,7 @@ impl Component for MemePokePage {
                                 match state {
                                     PokeState::GetNewMatch => utils::view_loading("Getting a new match"),
                                     PokeState::Action(action, user) => utils::view_loading(
-                                        &*format!(
+                                        format!(
                                             "Sending {} to {}", 
                                             match action {
                                                 SocialAction::CancelRequest => "cancel request",
@@ -169,7 +169,7 @@ impl Component for MemePokePage {
                                                 SocialAction::RemoveFriend => "friend removal"
                                             },
                                             user
-                                        )
+                                        ).as_str()
                                     ),
                                     PokeState::GetSocial => utils::view_loading("Getting Social Information"),
                                     PokeState::Display(social) => self.view_pokepage(social), // display poke page here
@@ -282,11 +282,6 @@ impl MemePokePage {
 
                 <div class="d-flex flex-wrap align-content-stretch">
                     {
-                        // I am in no way proud, or happy with this closure:
-                        // as request &Self has '_ and we need 'static for callback, create a new var with the username copied, move into closure, as a redult by inference, lifetime required by callback closure and the new variable are the same?
-                        // There must be a simpler way to -> e,g make Self 'Static but I am not confident enough with lifetimes to try yet
-                        // Hence the create var -> move closure -> clone mess you see below:
-                        // I am very tired, will fix tommorow
                         social.requested.iter().map(|requested| {  
                             let req_1 = requested.username.clone();
                             let req_2 = requested.username.clone();
@@ -393,24 +388,6 @@ impl MemePokePage {
         self.ft = Some(ft)
     }
 }
-
-/*
-
-pub fn get_user(code: String, link: &ComponentLink<LoginPage>) -> FetchTask {
-    let req = Request::get(format!("{}/loginuser&code={}", utils::site_uri, code)).body(Nothing).unwrap();
-
-    let callback = link.callback(|response: Response<Json<anyhow::Result<User>>>| {
-        if let Json(Ok(data)) = response.into_body() {
-            LoginMsg::GotUser(data)
-        } else {
-            LoginMsg::Failure
-        }
-    });
-
-    FetchService::fetch(req, callback).unwrap()
-}
-*/
-
 
 /* Retrieve a meme from the backend, and create a corresponding event to update the GUI
 */

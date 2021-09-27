@@ -54,7 +54,7 @@ impl Component for MainPage {
                                         <p>{"Developed by Oliver Killane as the successor to MemePoke! from the IC Hello World Hackathon."}</p>
                                         <p>{"Made entirely in Rust using the Yew stack"}</p>
                                         <a class="btn btn-primary btn-lg btn-block" href="https://www.reddit.com/api/v1/authorize?client_id=WI5Q-r9Nu3EjSxIjz5SzEA&response_type=code&state=RANDOMSTRING&redirect_uri=http://127.0.0.1:8080/memepoke&duration=temporary&scope=identity">{"Login"}</a>
-                                        <a class="btn btn-primary btn-lg btn-block" href="https://github.com/OliverKillane">{"Project Repo"}</a>
+                                        <a class="btn btn-primary btn-lg btn-block" href="https://github.com/OliverKillane/memepoke-reloaded">{"Project Repo"}</a>
                                     </div>
                                 </div>
                             </div>
